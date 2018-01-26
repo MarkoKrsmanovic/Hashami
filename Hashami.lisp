@@ -198,27 +198,27 @@
 )
 
 ; sledece dve funkcije vracaju elemente koji treba da budu obrisani (x y)
-(defun check-row-sandwich (states-ptr xo)
+(defun check-row-sandwich (states-ptr xo move)
   (let*
       (
        (player (if xo (car states-ptr) (cadr states-ptr)))
        (opponent (if xo (cadr states-ptr) (car states-ptr)))
       )
-    (to-remove player opponent)
+    (to-remove player opponent move)
   )
 )
 
-(defun check-column-sandwich (states-vertical-ptr xo)
+(defun check-column-sandwich (states-vertical-ptr xo move)
   (let*
       (
        (player (if xo (car states-vertical-ptr) (cadr states-vertical-ptr)))
        (opponent (if xo (cadr states-vertical-ptr) (car states-vertical-ptr)))
       )
-    (to-remove player opponent)
+    (to-remove player opponent move)
   )
 )
 
-(defun to-remove (player opponent)
+(defun to-remove (player opponent move)
   (let*
       (
        (left-bound (car player))
@@ -226,7 +226,8 @@
       )
     (cond
      ((null player) nil)
-     (t (append (in-between left-bound right-bound (list (car left-bound) (1+ (cadr left-bound))) nil opponent) (to-remove (cdr player) opponent)))
+     ((and (not (null right-bound)) (not (equalp move left-bound)) (not (equalp move right-bound))) (append nil (to-remove (cdr player) opponent move)))
+     (t (append (in-between left-bound right-bound (list (car left-bound) (1+ (cadr left-bound))) nil opponent) (to-remove (cdr player) opponent move)))
     )
   )
 )
@@ -475,7 +476,7 @@
 (defun check-if-not-addable-diagonal (element lr xo)
   (let*
       ((sum (+ (car element) (cadr element))))
-    (cond 
+    (cond
       ((equalp lr -1) (cond
                         ((equalp xo 'x) (cond
                                           ((or (< sum 8) (> sum (- (* dimension 2) 4))) NIL )
@@ -570,7 +571,7 @@
       (cond
         ((null quit-flag) beta)
         (t alpha)
-        ))))))))) 
+        )))))))))
 
 (defun alpha-beta (state-par alpha beta depth xo)
   (cond
@@ -588,7 +589,7 @@
          (cond
            ((null quit-flag) best-move)
            ((not (null is-terminal)) best-move)
-           (t beta)
+           (t best-move)
            ))))
     )
 )
